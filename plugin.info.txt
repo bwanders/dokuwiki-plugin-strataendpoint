@@ -1,4 +1,4 @@
-base   stratastorage
+base   strataendpoint
 author Brend Wanders
 email  b.wanders@utwente.nl
 date   2012-05-03
