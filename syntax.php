@@ -72,7 +72,6 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
 
         // handle all origins
         foreach($this->helper->extractGroups($tree,'allow-origin') as $origins) {
-            // FIXME: check for '*' only, or all having 'scheme://host[:port]'
             $allowedOrigins = array_merge($allowedOrigins, array_map('trim',$this->helper->extractText($origins)));
 
             // check for stray groups
@@ -80,6 +79,16 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
                 msg('The <code>allow-origins</code> group should not contain groups.',-1);
                 return array();
             }
+        }
+
+        if(count($allowedOrigins) != 1 || $allowedOrigins[0] != '*') {
+            $invalidOrigins = preg_grep('@([^/: ]+)://([^/: ]+)(:[0-9]+)?@',$allowedOrigins, PREG_GREP_INVERT);
+
+            foreach($invalidOrigins as $invalid) {
+                msg('Invalid allow origin line \'<code>'.hsc($invalid).'</code>\'. Origins must conform to the scheme://host[:port] format.',-1);
+            }
+
+            if(count($invalidOrigins)) return array();
         }
 
         // set query or free query
