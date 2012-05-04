@@ -26,6 +26,16 @@ class renderer_plugin_strataendpoint extends Doku_Renderer {
     function document_end() {
         global $ID;
         p_set_metadata($ID, array('format' => array($this->getFormat() => $this->headers) ));
+
+        if($this->doc == '') {
+            header('HTTP/1.0 404 Not Found');
+            header('content-type: text/plain');
+            echo json_encode(array(
+                'status'=>'error',
+                'messages'=>array(array('lvl'=>'error','msg'=>'Not found'))
+            ));
+            exit;    
+        }
     }
 
     function getFormat(){

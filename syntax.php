@@ -140,6 +140,14 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
         return $query;
     }
 
+    function _jsonError() {
+        global $MSG;
+        return json_encode(array(
+            'status'=>'error',
+            'messages'=>$MSG
+        ));
+    }
+
     function render($mode, &$R, $data) {
         global $ID, $conf;
 
@@ -209,12 +217,19 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
 
             return true;
         } elseif($mode == 'strataendpoint') {
-            $R->headers['Access-Control-Allow-Origin'] = implode(' ', $allowedOrigins);;
+            if(count($allowedOrigins)) {
+                $R->headers['Access-Control-Allow-Origin'] = implode(' ', $allowedOrigins);;
+            }
 
             if($query == null) {
                 // determine tree
                 $tree = $this->helper->constructTree(file('php://input'),'endpoint');
                 $query = $this->_parseQuery($tree);
+                
+                if($query == array()) {
+                    $R->doc .= $this->_jsonError();
+                    return false;
+                }
             }
 
             foreach($query['fields'] as $meta) {
@@ -236,17 +251,13 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
             }
             
             if($result == false) {
-                // FIXME
-                global $MSG;
-                $R->doc .= 'Ohoh!';
-                foreach($MSG as $msg) {
-                    $R->doc .= $msg['lvl']. ': '.$msg['msg']."\n";
-                }
+                $R->doc .= $this->_jsonError();
                 return false;
             }
 
             if($queryType == 'relations') {
                 $reply = array(
+                    'status'=>'ok',
                     'head'=>array(),
                     'body'=>array()
                 );
@@ -267,6 +278,7 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
                 }
             } else {
                 $reply = array(
+                    'status'=>'ok',
                     'body'=>array()
                 );
                 foreach($result as $subject=>$resource) {
