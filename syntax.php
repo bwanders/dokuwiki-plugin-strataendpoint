@@ -251,10 +251,17 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
                     'body'=>array()
                 );
 
+                foreach($fields as $f) {
+                    $reply['head'][] = array(
+                        'field'=>$f['variable'],
+                        'caption'=>$f['caption']
+                    );
+                }
+
                 foreach($result as $row) {
                     $item = array();
                     foreach($fields as $f) {
-                        $item[$f['variable']] = $f['aggregate']->aggregate($row[$f['variable']],$f['aggregateHint']);
+                        $item[] = $f['aggregate']->aggregate($row[$f['variable']],$f['aggregateHint']);
                     }
                     $reply['body'][] = $item;
                 }
