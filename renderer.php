@@ -17,7 +17,7 @@ class renderer_plugin_strataendpoint extends Doku_Renderer {
 
     function document_start() {
         $this->headers = array(
-            'Content-Type' => 'text/plain',
+            'Content-Type' => 'application/json',
             'Access-Control-Allow-Credentials' => 'true'
         );
         $this->info['cache'] = false;
@@ -29,7 +29,7 @@ class renderer_plugin_strataendpoint extends Doku_Renderer {
 
         if($this->doc == '') {
             header('HTTP/1.0 404 Not Found');
-            header('content-type: text/plain');
+            header('content-type: application/json');
             echo json_encode(array(
                 'status'=>'error',
                 'messages'=>array(array('lvl'=>'error','msg'=>'Not found'))
