@@ -103,7 +103,7 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
         }
 
 
-        return array($queryType, $allowedOrigins, $query);
+        return array($queryType, $allowedOrigins, $query, $pos);
     }
 
     function _parseQuery(&$tree) {
@@ -164,9 +164,13 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
             return false;
         }
 
-        list($queryType, $allowedOrigins, $query) = $data;
+        list($queryType, $allowedOrigins, $query, $pos) = $data;
 
-        if($mode == 'xhtml') {
+        if($mode == 'metadata') {
+            if(!isset($R->meta['strataendpoint'])) {
+                $R->meta['strataendpoint'] = $pos;
+            }
+        } elseif($mode == 'xhtml') {
             $R->p_open();
             $R->strong_open();
             $R->doc .= 'Endpoint (';
@@ -183,7 +187,13 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
             $R->doc .= $R->_formatLink($link);
 
             $R->doc .= ')';
+
             $R->strong_close();
+            if(p_get_metadata($ID,'strataendpoint') != $pos) {
+                $R->emphasis_open();
+                $R->doc .= ' - Endpoint disabled because it is not the first one on the page.';
+                $R->emphasis_close();
+            }
             $R->p_close();
 
             $R->p_open();
@@ -226,6 +236,10 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
 
             return true;
         } elseif($mode == 'strataendpoint') {
+            if(p_get_metadata($ID,'strataendpoint') != $pos) {
+                return false;
+            }
+
             if(count($allowedOrigins)) {
                 $R->headers['Access-Control-Allow-Origin'] = implode(' ', $allowedOrigins);;
             }
