@@ -4,4 +4,4 @@ email  b.wanders@utwente.nl
 date   2012-05-03
 name   Strata Endpoint
 desc   Endpoint allows external tools to query the data
-url    http://example.com/
+url    http://github.com/bwanders/dokuwiki-plugin-strataendpoint
