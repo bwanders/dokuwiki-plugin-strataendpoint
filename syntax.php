@@ -51,6 +51,7 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
 
         // handle all line options
         foreach($this->helper->extractText($tree) as $setting) {
+            $setting = $setting['text'];
             if(preg_match('/type\s*:\s*(relations|resources)/',$setting,$capture)) {
                 // the query type option
                 $queryType = $capture[1];
@@ -72,7 +73,9 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
 
         // handle all origins
         foreach($this->helper->extractGroups($tree,'allow-origin') as $origins) {
-            $allowedOrigins = array_merge($allowedOrigins, array_map('trim',$this->helper->extractText($origins)));
+            foreach($this->helper->extractText($origins) as $origin) {
+                $allowedOrigins[] = trim($origin['text']);
+            }
 
             // check for stray groups
             if(count($origins['cs'])) {
@@ -107,46 +110,49 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
     }
 
     function _parseQuery(&$tree) {
-        $query = array();
-
-        // parse long fields, if available
-        $query['fields'] = $this->helper->getFields($tree, $typemap);
-
-        // check no data
-        if(count($query['fields']) == 0) {
-            msg($this->helper->getLang('error_query_noselect'),-1);
-            return array();
-        }
-
-        // determine the variables to project
-        $projection = array();
-        foreach($query['fields'] as $f) $projection[] = $f['variable'];
-        $projection = array_unique($projection);
-
-        // parse the query itself
-        list($query['query'], $variables) = $this->helper->constructQuery($tree, $typemap, $projection);
-        if(!$query['query']) return array();
-
-        // check projected variables and load types
-        foreach($query['fields'] as $i=>$f) {
-            $var = $f['variable'];
-            if(!in_array($var, $variables)) {
-                msg(sprintf($this->helper->getLang('error_query_unknownselect'),utf8_tohtml(hsc($var))),-1);
+        try {
+            $query = array();
+    
+            // parse long fields, if available
+            $query['fields'] = $this->helper->getFields($tree, $typemap);
+    
+            // check no data
+            if(count($query['fields']) == 0) {
+                msg($this->helper->getLang('error_query_noselect'),-1);
                 return array();
             }
-
-            if(empty($f['type'])) {
-                if(!empty($typemap[$var])) {
-                    $query['fields'][$i] = array_merge($query['fields'][$i],$typemap[$var]);
-                } else {
-                    list($type, $hint) = $this->types->getDefaultType();
-                    $query['fields'][$i]['type'] = $type;
-                    $query['fields'][$i]['hint'] = $hint;
+    
+            // determine the variables to project
+            $projection = array();
+            foreach($query['fields'] as $f) $projection[] = $f['variable'];
+            $projection = array_unique($projection);
+    
+            // parse the query itself
+            list($query['query'], $variables) = $this->helper->constructQuery($tree, $typemap, $projection);
+    
+            // check projected variables and load types
+            foreach($query['fields'] as $i=>$f) {
+                $var = $f['variable'];
+                if(!in_array($var, $variables)) {
+                    msg(sprintf($this->helper->getLang('error_query_unknownselect'),utf8_tohtml(hsc($var))),-1);
+                    return array();
+                }
+    
+                if(empty($f['type'])) {
+                    if(!empty($typemap[$var])) {
+                        $query['fields'][$i] = array_merge($query['fields'][$i],$typemap[$var]);
+                    } else {
+                        list($type, $hint) = $this->types->getDefaultType();
+                        $query['fields'][$i]['type'] = $type;
+                        $query['fields'][$i]['hint'] = $hint;
+                    }
                 }
             }
+    
+            return $query;
+        } catch(stratabasic_exception $e) {
+            return array();
         }
-
-        return $query;
     }
 
     function _jsonError() {
