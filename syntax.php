@@ -13,9 +13,9 @@ if(!defined('DOKU_INC')) die('Meh.');
  */
 class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
     function __construct() {
-        $this->helper =& plugin_load('helper', 'stratabasic');
-        $this->types =& plugin_load('helper','stratastorage_types');
-        $this->triples =& plugin_load('helper','stratastorage_triples');
+        $this->helper =& plugin_load('helper', 'strata_syntax');
+        $this->types =& plugin_load('helper','strata_util');
+        $this->triples =& plugin_load('helper','strata_triples');
     }
 
     function getType() {
@@ -149,7 +149,7 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
             }
     
             return $query;
-        } catch(stratabasic_exception $e) {
+        } catch(strata_exception $e) {
             return array();
         }
     }
@@ -235,7 +235,7 @@ class syntax_plugin_strataendpoint extends DokuWiki_Syntax_Plugin {
                 $R->doc .= 'Query preview: ';
                 $R->strong_close();
                 $R->p_close();
-                $preview =& plugin_load('syntax','stratabasic_select');
+                $preview =& plugin_load('syntax','strata_table');
                 $preview->render($mode, $R, $query);
             }
 
