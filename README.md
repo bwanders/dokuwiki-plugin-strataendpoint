@@ -1,6 +1,8 @@
 Strata Endpoint
 ===============
 
+__This dokuwiki plugin is no longer maintained. Due to time constraints and no longer using this plugin myself, I can no longer properly maintain it.__
+
 This plugin depends on [bwanders/dokuwiki-strata](https://github.com/bwanders/dokuwiki-strata).
 
 The Strata Endpoint plugin is used to offer the structured data in the wiki to external tools.
